@@ -22,7 +22,7 @@ function varargout = fc_ui(varargin)
 
 % Edit the above text to modify the response to help fc_ui
 
-% Last Modified by GUIDE v2.5 25-Mar-2019 22:00:08
+% Last Modified by GUIDE v2.5 27-Mar-2019 12:18:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,7 +56,8 @@ function fc_ui_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 axes(handles.axes1);
 vid = videoinput('winvideo');
-hImage= image(zeros(600,700,3), 'Parent', handles.axes1);
+handles.vid = vid;
+hImage= image(zeros(400,600,3), 'Parent', handles.axes1);
 
 preview(vid, hImage);
 
@@ -76,3 +77,12 @@ function varargout = fc_ui_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+
+% --- Executes on button press in capturebutton1.
+function capturebutton1_Callback(hObject, eventdata, handles)
+% hObject    handle to capturebutton1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+frame = getsnapshot(handles.vid);
+%image(frame);
