@@ -22,7 +22,7 @@ function varargout = fc_ui(varargin)
 
 % Edit the above text to modify the response to help fc_ui
 
-% Last Modified by GUIDE v2.5 27-Mar-2019 12:18:28
+% Last Modified by GUIDE v2.5 27-Mar-2019 17:43:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,13 +54,18 @@ function fc_ui_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for fc_ui
 handles.output = hObject;
-axes(handles.axes1);
+set(handles.imagepanel,'visible','off');
+
+%set(handles.cameraaxes, 'Units', 'pixels');
+resi = get(handles.capturedimage, 'Position');
+disp(resi);
+axes(handles.cameraaxes);
 vid = videoinput('winvideo');
+get(vid);
 handles.vid = vid;
-hImage= image(zeros(400,600,3), 'Parent', handles.axes1);
+hImage= image(zeros(480,640,3), 'Parent', handles.cameraaxes);
 
 preview(vid, hImage);
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -85,4 +90,21 @@ function capturebutton1_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 frame = getsnapshot(handles.vid);
+set(handles.capturedimage, 'Units', 'pixels');
+resizePos = get(handles.capturedimage, 'Position');
+disp(resizePos);
+myImage = imresize(frame,[resizePos(3) resizePos(3)]);
+axes(handles.capturedimage);
+imshow(myImage);
+set(handles.capturedimage,'Units','normalized');
+set(handles.imagepanel,'visible','on');
+
+
 %image(frame);
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
