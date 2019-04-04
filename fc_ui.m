@@ -53,6 +53,7 @@ function fc_ui_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to fc_ui (see VARARGIN)
 
 % Choose default command line output for fc_ui
+[handles.noOfImage,handles.images,handles.mface, handles.eigen_faces, handles.weights_mat] = face_trainer();
 handles.output = hObject;
 set(handles.imagepanel,'visible','off');
 
@@ -60,12 +61,10 @@ set(handles.imagepanel,'visible','off');
 resi = get(handles.capturedimage, 'Position');
 disp(resi);
 axes(handles.cameraaxes);
-vid = videoinput('winvideo');
-get(vid);
-handles.vid = vid;
+handles.vid = videoinput('winvideo');
+get(handles.vid);
 hImage= image(zeros(480,640,3), 'Parent', handles.cameraaxes);
-
-preview(vid, hImage);
+preview(handles.vid, hImage);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -93,12 +92,14 @@ frame = getsnapshot(handles.vid);
 set(handles.capturedimage, 'Units', 'pixels');
 resizePos = get(handles.capturedimage, 'Position');
 disp(resizePos);
-myImage = imresize(frame,[resizePos(3) resizePos(3)]);
 axes(handles.capturedimage);
+%disp(size(myImage));
+myImage = imresize(rgb2gray(detectFace(frame)),[60 60]);
+handles.testface = histeq(myImage);
 imshow(myImage);
 set(handles.capturedimage,'Units','normalized');
 set(handles.imagepanel,'visible','on');
-
+guidata( hObject, handles );
 
 %image(frame);
 
@@ -108,3 +109,11 @@ function pushbutton3_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+[handles.mean_square_error] = face_recognizer(handles.noOfImage, handles.eigen_faces, handles.mface, handles.weights_mat, handles.testface);
+disp(handles.mean_square_error);
+imshow(handles.images{handles.mean_square_error});
+set(handles.resultimage,'Units','normalized');
+guidata( hObject, handles );
+
+
+
