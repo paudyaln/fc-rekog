@@ -1,11 +1,11 @@
-function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
+function [noOfImage,images, mface, eigen_faces, weights_mat] = face_trainer()
     %%% Image training and finding eigenfaces
     imagelist = dir('image_set');
     noOfFile = length(imagelist);
     noOfImage = noOfFile - 2;
     imagelist = imagelist(3:noOfFile);
     disp(noOfImage);
-    imageSet = cell(1, noOfImage*2);
+    imageSet = cell(1, noOfImage);
     HEset = cell(1, noOfImage);
     %LOGset = cell(1, noOfImage);
     images = cell(1, noOfImage);
@@ -14,7 +14,7 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
     disp(current_dir);
     %vectorized_images = zeros(50*50, noOfImage);
     vectorized_images = zeros(2500, noOfImage*2);
-    he_images = zeros(2500, noOfImage);
+    he_images = zeros(3600, noOfImage);
     %%% read each image and store it in the set of matrix
     %%% Vectorize the image matrix
     for i = 1:noOfImage
@@ -32,13 +32,12 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
         HEset{i} = im;
         he_images(:,i) = reshape(double(im),[],1);
         vectorized_images(:, i+19) = reshape(double(im),[],1);
-        imageSet{i+19} = im;
     end
     %%% find the mean vector of the vectorize image
     mean_vector = sum(vectorized_images,2) ./ (noOfImage*2);
     mface = mean_vector;
     %average_face = reshape(mean_vector, 60, 60);
-    mean_vector = repmat(mean_vector, 1, noOfImage*2);
+    mean_vector = repmat(mean_vector, 1, noOfImage);
     substracted_image = vectorized_images - mean_vector;
 
     %%% Finding the coverance matrix
@@ -48,6 +47,7 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
     [eigen_vec,D] = eigs(coverance_matrix,noOfImage*2);
     [~, desc] = sort(diag(D),'descend');
     eigen_vec = eigen_vec(:, desc);
+
     %%% Find eigenfaces
     eigen_faces =  substracted_image * eigen_vec;
 
@@ -61,9 +61,10 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
 
     %Project each training set to the face space and claculate the weights
     weights_mat = zeros(noOfImage*2,noOfImage);
-    for i=1:noOfImage*2
+    for i=1:noOfImage
        train_face = double(reshape(imageSet{i}, [],1));
        weights_mat(:, i) = transpose(eigen_faces) * (train_face-mface);
     end
+    noOfImage=noOfImage*2;
 end
 
