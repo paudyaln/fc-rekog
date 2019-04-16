@@ -13,17 +13,15 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
     image_dir =  '/image_set/';
     disp(current_dir);
     %vectorized_images = zeros(50*50, noOfImage);
-    vectorized_images = zeros(2500, noOfImage*2);
-    he_images = zeros(2500, noOfImage);
+    vectorized_images = zeros(3600, noOfImage*2);
+    he_images = zeros(3600, noOfImage);
     %%% read each image and store it in the set of matrix
     %%% Vectorize the image matrix
     for i = 1:noOfImage
-        disp(i);
-        disp(imagelist(i));
         filename = strcat(current_dir,image_dir,imagelist(i).name);
         im = rgb2gray(imread(filename));
         images{i} = im;
-        resizedImage = imresize(detectFace(im),[50 50]);
+        resizedImage = imresize(detectFace(im),[60 60]);
         imageSet{i} = resizedImage;
         vectorized_images(:, i) = reshape(double(resizedImage),[], 1);
         %figure;
@@ -45,7 +43,7 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
     coverance_matrix = transpose(substracted_image) * substracted_image;
 
     %%% find the eigen vector and the eigen values
-    [eigen_vec,D] = eigs(coverance_matrix,noOfImage*2);
+    [eigen_vec,D] = eigs(coverance_matrix,10);
     [~, desc] = sort(diag(D),'descend');
     eigen_vec = eigen_vec(:, desc);
     %%% Find eigenfaces
@@ -60,7 +58,7 @@ function [noOfImage,imageSet, mface, eigen_faces, weights_mat] = face_trainer()
     %eigen_faces = reshape(eigen_faces, 60, 60,  10);
 
     %Project each training set to the face space and claculate the weights
-    weights_mat = zeros(noOfImage*2,noOfImage);
+    weights_mat = zeros(10,noOfImage);
     for i=1:noOfImage*2
        train_face = double(reshape(imageSet{i}, [],1));
        weights_mat(:, i) = transpose(eigen_faces) * (train_face-mface);

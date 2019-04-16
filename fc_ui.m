@@ -8,7 +8,7 @@ function varargout = fc_ui(varargin)
 %
 %      FC_UI('CALLBACK',hObject,eventData,handles,...) calls the local
 %      function named CALLBACK in FC_UI.M with the given input arguments.
-%
+%c
 %      FC_UI('Property','Value',...) creates a new FC_UI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before fc_ui_OpeningFcn gets called.  An
@@ -22,7 +22,7 @@ function varargout = fc_ui(varargin)
 
 % Edit the above text to modify the response to help fc_ui
 
-% Last Modified by GUIDE v2.5 27-Mar-2019 17:43:10
+% Last Modified by GUIDE v2.5 14-Apr-2019 22:49:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,12 +59,19 @@ set(handles.imagepanel,'visible','off');
 
 %set(handles.cameraaxes, 'Units', 'pixels');
 resi = get(handles.capturedimage, 'Position');
-disp(resi);
 axes(handles.cameraaxes);
-handles.vid = videoinput('winvideo');
+handles.vid = videoinput('winvideo',1,'RGB24_960x540');
+src = getselectedsource(handles.vid);
+src.Brightness = 200;
+disp(src);
 get(handles.vid);
-hImage= image(zeros(480,640,3), 'Parent', handles.cameraaxes);
+hImage= image(zeros(540,960,3), 'Parent', handles.cameraaxes);
 preview(handles.vid, hImage);
+
+
+
+
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -94,7 +101,7 @@ resizePos = get(handles.capturedimage, 'Position');
 disp(resizePos);
 axes(handles.capturedimage);
 %disp(size(myImage));
-myImage = imresize(rgb2gray(detectFace(frame)),[50 50]);
+myImage = imresize(rgb2gray(detectFace(frame)),[60 60]);
 handles.testface = myImage;
 imshow(myImage);
 set(handles.capturedimage,'Units','normalized');
@@ -116,4 +123,120 @@ set(handles.resultimage,'Units','normalized');
 guidata( hObject, handles );
 
 
+
+
+
+% --- Executes on button press in open_camera.
+function open_camera_Callback(hObject, eventdata, handles)
+% hObject    handle to open_camera (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Create the face detector object.
+faceDetector = vision.CascadeObjectDetector();
+
+% Create the point tracker object.
+pointTracker = vision.PointTracker('MaxBidirectionalError', 2);
+
+% Create the webcam object.
+%cam = webcam();
+
+% Capture one frame to get its size.
+videoFrame = getsnapshot(handles.vid);
+frameSize = size(videoFrame);
+
+% Create the video player object.
+videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
+runLoop = true;
+numPts = 0;
+frameCount = 0;
+
+while runLoop && frameCount < 400
+
+    % Get the next frame.
+    videoFrame = getsnapshot(handles.vid);
+    videoFrameGray = rgb2gray(videoFrame);
+    frameCount = frameCount + 1;
+
+    %if numPts < 10
+        % Detection mode.
+        bbox = faceDetector.step(videoFrameGray);
+
+        if ~isempty(bbox)
+            % Find corner points inside the detected region.
+            %points = detectMinEigenFeatures(videoFrameGray, 'ROI', bbox(1, :));
+
+            % Re-initialize the point tracker.
+            %xyPoints = points.Location;
+            %numPts = size(xyPoints,1);
+            %release(pointTracker);
+            %initialize(pointTracker, xyPoints, videoFrameGray);
+
+            % Save a copy of the points.
+            %oldPoints = xyPoints;
+
+            % Convert the rectangle represented as [x, y, w, h] into an
+            % M-by-2 matrix of [x,y] coordinates of the four corners. This
+            % is needed to be able to transform the bounding box to display
+            % the orientation of the face.
+            bboxPoints = bbox2points(bbox(1, :));
+
+            % Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4]
+            % format required by insertShape.
+            bboxPolygon = reshape(bboxPoints', 1, []);
+
+            % Display a bounding box around the detected face.
+            videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
+
+            % Display detected corners.
+            %videoFrame = insertMarker(videoFrame, xyPoints, '+', 'Color', 'white');
+        end
+
+%     else
+%         Tracking mode.
+%         [xyPoints, isFound] = step(pointTracker, videoFrameGray);
+%         visiblePoints = xyPoints(isFound, :);
+%         oldInliers = oldPoints(isFound, :);
+% 
+%         numPts = size(visiblePoints, 1);
+% 
+%         if numPts >= 10
+%             Estimate the geometric transformation between the old points
+%             and the new points.
+%             [xform, oldInliers, visiblePoints] = estimateGeometricTransform(...
+%                 oldInliers, visiblePoints, 'similarity', 'MaxDistance', 4);
+% 
+%             Apply the transformation to the bounding box.
+%             bboxPoints = transformPointsForward(xform, bboxPoints);
+% 
+%             Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4]
+%             format required by insertShape.
+%             bboxPolygon = reshape(bboxPoints', 1, []);
+% 
+%             Display a bounding box around the face being tracked.
+%             videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
+% 
+%             Display tracked points.
+%             videoFrame = insertMarker(videoFrame, visiblePoints, '+', 'Color', 'white');
+% 
+%             Reset the points.
+%             oldPoints = visiblePoints;
+%             setPoints(pointTracker, oldPoints);
+%         end
+% 
+%     end
+
+    % Display the annotated video frame using the video player object.
+    step(videoPlayer, videoFrame);
+    %showFrameOnAxis(handles.cameraaxes, videoFrame);
+    % Check whether the video player window has been closed.
+    %runLoop = isOpen(videoPlayer);
+end
+
+
+
+Clean up.
+clear cam;
+release(videoPlayer);
+release(pointTracker);
+release(faceDetector);
 

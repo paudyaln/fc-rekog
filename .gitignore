@@ -1,5 +1,12 @@
 image_set/
 
+extra_image/
+
+test_image/
+
+
 face_trainer_main.m
 
-nischal_test.jpg
+*.jpg
+
+.gitignore

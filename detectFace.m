@@ -13,5 +13,7 @@ function [inputImg] = detectFace(inputImg)
     %points = detectMinEigenFeatures(rgb2gray(inputImg), 'ROI', bbox);
     
      % Display the detected points.
-end
-
+     
+end  
+     
+   
