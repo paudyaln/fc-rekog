@@ -14,11 +14,14 @@ frameSize = size(videoFrame);
 
 videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
 
+A = [];
 runLoop = true;
+counter = 0;
 numPts = 0;
 [svm, knn] = trainer_feature_extraction();
 figure;
-while runLoop
+while counter < 100
+    counter = counter + 1;
     videoFrame = snapshot(cam);
     videoFrameGray = rgb2gray(videoFrame);
    
@@ -67,7 +70,9 @@ while runLoop
         [predicted_test, score_test, cost_test] = predict(svm, featureVector);
         predicted_test_knn = predict(knn, featureVector);
 
-        disp(predicted_test);
+        %disp(predicted_test);
+        A = [A,predicted_test];
+        
     
         % Apply the transformation to the bounding box.
          bboxPoints = transformPointsForward(xform, bboxPoints);
@@ -96,7 +101,18 @@ while runLoop
      % Check whether the video player window has been closed.
      runLoop = isOpen(videoPlayer);
 end
-    
+
+%U = unique(A);
+disp(U);
+n = zeros(length(U), 1);
+for iU = 1:length(U)
+  n(iU) = length(find(strcmp(U{iU}, A)));
+end
+[~, itemp] = max(n);
+result = U(itemp);
+disp('You are');
+disp(result);
+   
     
     % Clean up.
 clear cam;
