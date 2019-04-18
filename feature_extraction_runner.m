@@ -186,7 +186,7 @@ end
 %%
 feature_set = array2table(feature_matrix);
 svm = fitcecoc(feature_set, image_class_matrix);
-knn = fitcknn(feature_set, image_class_matrix,'NumNeighbors',5,'Standardize',1);
+knn = fitcknn(feature_set, image_class_matrix,'NumNeighbors',8,'Standardize',1);
 
 % %Edge detection of my face from the training database
 % [~, threshold] = edge(I, 'sobel');
@@ -246,7 +246,7 @@ t = 3;
 accuracy_svm = sum(cellfun(@isequal, test_image_class_matrix,predictedLabels))/size(test_image_class_matrix,1);
 disp(accuracy_svm);
 
- accuracy_knn = sum(cellfun(@isequal, test_image_class_matrix,predictedLabels_knn))/size(test_image_class_matrix,1);
+accuracy_knn = sum(cellfun(@isequal, test_image_class_matrix,predictedLabels_knn))/size(test_image_class_matrix,1);
 disp(accuracy_knn);
 %Edge detection of my face from the training database
 I_test = imresize(rgb2gray(detectFace(imread('nischal_test.jpg'))),[100 100]);

@@ -22,7 +22,7 @@ while runLoop
     videoFrame = snapshot(cam);
     videoFrameGray = rgb2gray(videoFrame);
    
-    if numPts < 50
+    if numPts < 30
         bbox = faceDetector.step(videoFrameGray);
         
     if ~isempty(bbox)
@@ -55,7 +55,7 @@ while runLoop
 
         numPts = size(visiblePoints,1);
         
-        if numPts >= 50
+        if numPts >= 30
            [xform, oldInliers, visiblePoints] = estimateGeometricTransform(oldInliers, visiblePoints, 'similarity', 'MaxDistance', 4); 
             
            inputImg = imresize(imcrop(videoFrameGray, bbox),[100 100]);
@@ -65,7 +65,7 @@ while runLoop
         BW1 = edge(inputImg,'sobel', threshold * fudgeFactor);
         [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
         [predicted_test, score_test, cost_test] = predict(svm, featureVector);
-        predicted_test_knn = predict(knn, featureVector);
+        [predictedLabels_knn, score_knn, cost_knn] = predict(knn, featureVector);
 
         disp(predicted_test);
     
