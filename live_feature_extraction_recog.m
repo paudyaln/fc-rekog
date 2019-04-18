@@ -16,15 +16,15 @@ videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1
 
 runLoop = true;
 numPts = 0;
-svm = trainer_feature_extraction();
-
+[svm, knn] = trainer_feature_extraction();
+figure;
 while runLoop
     videoFrame = snapshot(cam);
     videoFrameGray = rgb2gray(videoFrame);
-    
+   
     if numPts < 50
         bbox = faceDetector.step(videoFrameGray);
-    
+        
     if ~isempty(bbox)
         points = detectMinEigenFeatures(videoFrameGray, 'ROI', bbox(1,:));
         
@@ -58,13 +58,28 @@ while runLoop
         if numPts >= 50
            [xform, oldInliers, visiblePoints] = estimateGeometricTransform(oldInliers, visiblePoints, 'similarity', 'MaxDistance', 4); 
             
+           inputImg = imresize(imcrop(videoFrameGray, bbox),[100 100]);
+        %Edge detection of my face from the training database
+        [~, threshold] = edge(inputImg, 'sobel');
+        fudgeFactor = .7;
+        BW1 = edge(inputImg,'sobel', threshold * fudgeFactor);
+        [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
+        [predicted_test, score_test, cost_test] = predict(svm, featureVector);
+        predicted_test_knn = predict(knn, featureVector);
+
+        disp(predicted_test);
+    
         % Apply the transformation to the bounding box.
          bboxPoints = transformPointsForward(xform, bboxPoints);
          % Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4]
          % format required by insertShape.
          bboxPolygon = reshape(bboxPoints', 1, []);
-         % Display a bounding box around the face being tracked.
          videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
+         % Display a bounding box around the face being tracked.
+         if(strcmp(predicted_test{1}, predicted_test_knn{1}) == 1)
+            videoFrame = insertText(videoFrame,  [round(bboxPolygon(1)) round(bboxPolygon(2))],predicted_test{1},'FontSize',18,'BoxColor',...
+                'red','BoxOpacity',0.4,'TextColor','white');
+         end
          % Display tracked points.
          videoFrame = insertMarker(videoFrame, visiblePoints, '+', 'Color', 'white');
  
@@ -74,15 +89,7 @@ while runLoop
         end
     end
     
-    inputImg = imresize(imcrop(videoFrameGray, bbox),[100 100]);
-    %Edge detection of my face from the training database
-    [~, threshold] = edge(inputImg, 'sobel');
-    fudgeFactor = .7;
-    BW1 = edge(inputImg,'sobel', threshold * fudgeFactor);
-    [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
-    [predicted_test, score_test, cost_test] = predict(svm, featureVector);
-
-    disp(predicted_test);
+    
     
     % Display the annotated video frame using the video player object.
      step(videoPlayer, videoFrame);

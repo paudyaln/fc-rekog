@@ -1,4 +1,4 @@
-function [svm] = trainer_feature_extraction()
+function [svm_model, knn_model] = trainer_feature_extraction()
     %% Image training and finding eigenfaces
     imagelist = dir('image_set');
     noOfFile = length(imagelist);
@@ -183,7 +183,9 @@ function [svm] = trainer_feature_extraction()
 
     %%
     feature_set = array2table(feature_matrix);
-    svm = fitcecoc(feature_set, image_class_matrix);
+    svm_model = fitcecoc(feature_set, image_class_matrix);
+    knn_model = fitcknn(feature_set, image_class_matrix,'NumNeighbors',5,'Standardize',1);
+
     % %Edge detection of my face from the training database
     % [~, threshold] = edge(I, 'sobel');
     % fudgeFactor = .7;
