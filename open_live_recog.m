@@ -24,7 +24,6 @@ function [result] = open_live_recog(knn, svm)
     runLoop = true;
     counter = 0;
     numPts = 0;
-    figure;
     while runLoop && counter < 100
         counter = counter + 1;
         videoFrame = snapshot(cam);

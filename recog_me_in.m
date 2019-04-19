@@ -56,6 +56,7 @@ function recog_me_in_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for recog_me_in
 handles.output = hObject;
 [handles.knn_model, handles.svm_model] = trainer_feature_extraction();
+set(handles.result_image,'visible','off');
 % Update handles structure
 guidata(hObject, handles);
 
@@ -80,6 +81,7 @@ function open_cam_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 r = open_live_recog(handles.knn_model, handles.svm_model);
+set(handles.result_image,'visible','on');
 im = imread(strcat('image_set/',r{1} ,'.jpg'));
 set(handles.result_image, 'Units', 'pixels');
 %resizePos = get(handles.capturedimage, 'Position');
