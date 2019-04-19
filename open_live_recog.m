@@ -1,6 +1,11 @@
-function [] = open_live_recog(knn, svm)
-   faceDetector = vision.CascadeObjectDetector();
-
+function [result] = open_live_recog(knn, svm)
+    %knn    KNN face recognition Model
+    %svm    SVM based face recognition Model
+    % Open up the camera, extract frame and recognize faces, 
+    
+    
+    %initialize haar cascader
+    faceDetector = vision.CascadeObjectDetector();
     faceDetector.MinSize = [175, 175];
 
     pointTracker = vision.PointTracker('MaxBidirectionalError',2);
@@ -15,10 +20,13 @@ function [] = open_live_recog(knn, svm)
 
     videoPlayer = vision.VideoPlayer('Position', [100 100 [frameSize(2), frameSize(1)]+30]);
 
+    A = [];
     runLoop = true;
+    counter = 0;
     numPts = 0;
     figure;
-    while runLoop
+    while runLoop && counter < 100
+        counter = counter + 1;
         videoFrame = snapshot(cam);
         videoFrameGray = rgb2gray(videoFrame);
 
@@ -67,14 +75,17 @@ function [] = open_live_recog(knn, svm)
             [predicted_test, score_test, cost_test] = predict(svm, featureVector);
             [predictedLabels_knn, score_knn, cost_knn] = predict(knn, featureVector);
 
+            %disp(predicted_test);
+            A = [A,predicted_test];
 
             % Apply the transformation to the bounding box.
              bboxPoints = transformPointsForward(xform, bboxPoints);
              % Convert the box corners into the [x1 y1 x2 y2 x3 y3 x4 y4]
              % format required by insertShape.
              bboxPolygon = reshape(bboxPoints', 1, []);
-             videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
              % Display a bounding box around the face being tracked.
+             videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
+             %Insert name to the predicted image frame
              if(strcmp(predicted_test{1}, predictedLabels_knn{1}) == 1)
                 videoFrame = insertText(videoFrame,  [round(bboxPolygon(1)) round(bboxPolygon(2))],predicted_test{1},'FontSize',18,'BoxColor',...
                     'red','BoxOpacity',0.4,'TextColor','white');
@@ -95,9 +106,18 @@ function [] = open_live_recog(knn, svm)
          % Check whether the video player window has been closed.
          runLoop = isOpen(videoPlayer);
     end
+    U = unique(A);
+    %disp(U);
+    n = zeros(length(U), 1);
+    for iU = 1:length(U)
+      n(iU) = length(find(strcmp(U{iU}, A)));
+    end
+    [~, itemp] = max(n);
+    result = U(itemp);
+    disp('You are');
+    disp(result);
 
-
-        % Clean up.
+    % Clean up.
     clear cam;
     release(videoPlayer);
     release(pointTracker);

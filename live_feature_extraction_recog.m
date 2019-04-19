@@ -81,7 +81,7 @@ while counter < 100
          bboxPolygon = reshape(bboxPoints', 1, []);
          videoFrame = insertShape(videoFrame, 'Polygon', bboxPolygon, 'LineWidth', 3);
          % Display a bounding box around the face being tracked.
-         if(strcmp(predicted_test{1}, predicted_test_knn{1}) == 1)
+         if(strcmp(predicted_test{1}, predictedLabels_knn{1}) == 1)
             videoFrame = insertText(videoFrame,  [round(bboxPolygon(1)) round(bboxPolygon(2))],predicted_test{1},'FontSize',18,'BoxColor',...
                 'red','BoxOpacity',0.4,'TextColor','white');
          end
@@ -102,8 +102,8 @@ while counter < 100
      runLoop = isOpen(videoPlayer);
 end
 
-%U = unique(A);
-disp(U);
+U = unique(A);
+%disp(U);
 n = zeros(length(U), 1);
 for iU = 1:length(U)
   n(iU) = length(find(strcmp(U{iU}, A)));
@@ -112,7 +112,7 @@ end
 result = U(itemp);
 disp('You are');
 disp(result);
-   
+ 
     
     % Clean up.
 clear cam;

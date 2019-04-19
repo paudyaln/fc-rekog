@@ -6,8 +6,7 @@ function [svm_model, knn_model] = trainer_feature_extraction()
     imagelist = imagelist(3:noOfFile);
     disp(noOfImage);
     imageSet = cell(1, noOfImage);
-    HEset = cell(1, noOfImage);
-    LOGset = cell(1, noOfImage);
+  
     current_dir = replace(pwd, '\', '/');
     image_dir =  '/image_set/';
     test_image_dir = '/test_image/';
@@ -26,6 +25,8 @@ function [svm_model, knn_model] = trainer_feature_extraction()
     figure;
     for i = 1:noOfImage
         filename = strcat(current_dir,image_dir,imagelist(i).name);
+        fprintf('%s ', 'Loading...');
+        disp(filename);
         resizedImage = imresize(rgb2gray(detectFace(imread(filename))),[100 100]);
         imageSet{i} = resizedImage;
         %vectorized_images(:, i) = reshape(double(resizedImage),[], 1);
@@ -163,28 +164,28 @@ function [svm_model, knn_model] = trainer_feature_extraction()
 
         %%
 
-    %     im = medfilt2(resizedImage);
-    %     %Edge detection of my face from the training database
-    %     [~, threshold] = edge(im, 'sobel');
-    %     BW1 = edge(im,'sobel', threshold * fudgeFactor);
-    % 
-    %     %extract the hog features of the processed face
-    %     [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
-    %     %featureVector = extractLBPFeatures(BW1,'CellSize',[8 8]);
-    %     feature_matrix(i+(noOfImage*7),:) = featureVector;
-    %     
-    %     image_class_matrix{i+(noOfImage*7)} = name{1};
-    %     % rotated -7
+        im = resizedImage + 50;
+        min1=min(min(im));
+        max1=max(max(im));
+        im=((im-min1).*255)./(max1-min1);
+        %Edge detection of my face from the training database
+        [~, threshold] = edge(im, 'sobel');
+        BW1 = edge(im,'sobel', threshold * fudgeFactor);
+    
+        %extract the hog features of the processed face
+        [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
+        %featureVector = extractLBPFeatures(BW1,'CellSize',[8 8]);
+        feature_matrix(i+(noOfImage*7),:) = featureVector;
+        image_class_matrix{i+(noOfImage*7)} = name{1};
+        
 
-        ax = subplot(10, 10, i);
-        imshow(im, 'Parent', ax);
-
+       
     end
 
     %%
     feature_set = array2table(feature_matrix);
     svm_model = fitcecoc(feature_set, image_class_matrix);
-    knn_model = fitcknn(feature_set, image_class_matrix,'NumNeighbors',5,'Standardize',1);
+    knn_model = fitcknn(feature_set, image_class_matrix,'NumNeighbors',4,'Standardize',1);
 
     % %Edge detection of my face from the training database
     % [~, threshold] = edge(I, 'sobel');

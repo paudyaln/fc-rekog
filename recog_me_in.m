@@ -1,3 +1,4 @@
+% GUI runner file
 function varargout = recog_me_in(varargin)
 % RECOG_ME_IN MATLAB code for recog_me_in.fig
 %      RECOG_ME_IN, by itself, creates a new RECOG_ME_IN or raises the existing
@@ -72,19 +73,20 @@ function varargout = recog_me_in_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
-
-% --- Executes on button press in retrain_model.
-function retrain_model_Callback(hObject, eventdata, handles)
-% hObject    handle to retrain_model (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --- Executes on button press in open_cam.
 function open_cam_Callback(hObject, eventdata, handles)
 % hObject    handle to open_cam (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-open_live_recog(handles.knn_model, handles.svm_model);
+r = open_live_recog(handles.knn_model, handles.svm_model);
+im = imread(strcat('image_set/',r{1} ,'.jpg'));
+set(handles.result_image, 'Units', 'pixels');
+%resizePos = get(handles.capturedimage, 'Position');
+axes(handles.result_image);
+handles.resultface = im;
+imshow(im);
+set(handles.result_image,'Units','normalized');
+set(handles.result_name, 'String',r{1});
+disp(r);
+guidata(hObject, handles);

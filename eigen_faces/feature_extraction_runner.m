@@ -165,21 +165,23 @@ for i = 1:noOfImage
     
     %%
     
-%     im = medfilt2(resizedImage);
-%     %Edge detection of my face from the training database
-%     [~, threshold] = edge(im, 'sobel');
-%     BW1 = edge(im,'sobel', threshold * fudgeFactor);
-% 
-%     %extract the hog features of the processed face
-%     [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
-%     %featureVector = extractLBPFeatures(BW1,'CellSize',[8 8]);
-%     feature_matrix(i+(noOfImage*7),:) = featureVector;
-%     
-%     image_class_matrix{i+(noOfImage*7)} = name{1};
-%     % rotated -7
+    im = resizedImage + 50;
+        min1=min(min(im));
+        max1=max(max(im));
+        im=((im-min1).*255)./(max1-min1);
+        %Edge detection of my face from the training database
+        [~, threshold] = edge(im, 'sobel');
+        BW1 = edge(im,'sobel', threshold * fudgeFactor);
+    
+        %extract the hog features of the processed face
+        [featureVector,hogVisualization] = extractHOGFeatures(BW1,'CellSize',[8 8]);
+        %featureVector = extractLBPFeatures(BW1,'CellSize',[8 8]);
+        feature_matrix(i+(noOfImage*7),:) = featureVector;
+        image_class_matrix{i+(noOfImage*7)} = name{1};
     
     ax = subplot(10, 10, i);
     imshow(im, 'Parent', ax);
+     
     
 end
 
@@ -188,24 +190,7 @@ feature_set = array2table(feature_matrix);
 svm = fitcecoc(feature_set, image_class_matrix);
 knn = fitcknn(feature_set, image_class_matrix,'NumNeighbors',8,'Standardize',1);
 
-% %Edge detection of my face from the training database
-% [~, threshold] = edge(I, 'sobel');
-% fudgeFactor = .7;
-% BW1 = edge(I,'sobel', threshold * fudgeFactor);
-% 
-% %extract the hog features of the processed face
-% [featureVector,hogVisualization] = extractLBPFeatures(BW1,'CellSize',[8 8]);
-% 
-% %visualize them
-% figure;
-% subplot(1,3,1);
-% imshow(I);
-% subplot(1,3,2);
-% imshow(BW1);
-% subplot(1,3,3);
-% imshow(BW1);
-% hold on;
-% plot (hogVisualization);
+
 
 %%
 
